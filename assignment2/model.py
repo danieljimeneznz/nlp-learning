@@ -5,6 +5,7 @@ class Model(object):
     computational graphs. Each algorithm you will construct in this homework will
     inherit from a Model object.
     """
+
     def add_placeholders(self):
         """Adds placeholder variables to tensorflow computational graph.
 

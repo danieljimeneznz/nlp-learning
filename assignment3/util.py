@@ -11,7 +11,7 @@ from __future__ import division
 import sys
 import time
 import logging
-from io import StringIO
+import StringIO
 from collections import defaultdict, Counter, OrderedDict
 import numpy as np
 from numpy import array, zeros, allclose
@@ -180,7 +180,8 @@ def to_table(data, row_labels, column_labels, precision=2, digits=4):
     to display table.
     """
     # Convert data to strings
-    data = [["%04.2f"%v for v in row] for row in data]
+    line = "%0"+str(digits)+"."+str(precision)+"f"
+    data = [[line%v for v in row] for row in data]
     cell_width = max(
         max(map(len, row_labels)),
         max(map(len, column_labels)),
@@ -214,7 +215,7 @@ class ConfusionMatrix(object):
         """Print tables"""
         # Header
         data = [[self.counts[l][l_] for l_,_ in enumerate(self.labels)] for l,_ in enumerate(self.labels)]
-        return to_table(data, self.labels, ["go\\gu"] + self.labels)
+        return to_table(data, self.labels, ["go\\gu"] + self.labels, precision=0, digits=0)
 
     def summary(self, quiet=False):
         """Summarize counts"""

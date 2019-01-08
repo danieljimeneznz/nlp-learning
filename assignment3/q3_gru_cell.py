@@ -18,7 +18,7 @@ logger = logging.getLogger("hw3.q3.1")
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
-class GRUCell(tf.contrib.rnn.RNNCell):
+class GRUCell(tf.nn.rnn_cell.RNNCell):
     """Wrapper around our GRU cell implementation that allows us to play
     nicely with TensorFlow.
     """
@@ -65,23 +65,21 @@ class GRUCell(tf.contrib.rnn.RNNCell):
         # be defined elsewhere!
         with tf.variable_scope(scope):
             ### YOUR CODE HERE (~20-30 lines)
-            #z_t = sigmoid(x_t U_z + h_{t-1} W_z + b_z)
-            #r_t = sigmoid(x_t U_r + h_{t-1} W_r + b_r)
-            #o_t = tanh(x_t U_o + r_t * h_{t-1} W_o + b_o)
-            #h_t = z_t * h_{t-1} + (1 - z_t) * o_t
-            U_r=tf.get_variable("U_r", shape=(self.input_size, self.state_size), initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float32)
-            W_r=tf.get_variable("W_r", shape=(self.state_size, self.state_size), initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float32)
-            b_r=tf.get_variable("b_r", shape=self.state_size, initializer=tf.zeros_initializer(), dtype=tf.float32)
-            U_z=tf.get_variable("U_z", shape=(self.input_size, self.state_size), initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float32)
-            W_z=tf.get_variable("W_z", shape=(self.state_size, self.state_size), initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float32)
-            b_z=tf.get_variable("b_z", shape=self.state_size, initializer=tf.zeros_initializer(), dtype=tf.float32)
-            U_o=tf.get_variable("U_o", shape=(self.input_size, self.state_size), initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float32)
-            W_o=tf.get_variable("W_o", shape=(self.state_size, self.state_size), initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float32)
-            b_o=tf.get_variable("b_o", shape=self.state_size, initializer=tf.zeros_initializer(), dtype=tf.float32)
-            z_t=tf.sigmoid(tf.matmul(inputs, U_z)+tf.matmul(state, W_z)+b_z)
-            r_t=tf.sigmoid(tf.matmul(inputs, U_r)+tf.matmul(state, W_r)+b_r)
-            o_t=tf.tanh(tf.matmul(inputs, U_o)+tf.matmul(r_t*state, W_o)+b_o)
-            new_state=z_t*state+(1-z_t)*o_t
+            initFunc = tf.contrib.layers.xavier_initializer(uniform=True) # set to False for gradient clipping
+            W_r = tf.get_variable('W_r', [self.state_size, self.state_size], initializer=initFunc, dtype = tf.float32)
+            U_r = tf.get_variable('U_r', [self.input_size, self.state_size], initializer=initFunc, dtype = tf.float32)
+            b_r = tf.get_variable('b_r', [self.state_size,], initializer=tf.constant_initializer(0), dtype = tf.float32)
+            W_z = tf.get_variable('W_z', [self.state_size, self.state_size], initializer=initFunc, dtype = tf.float32)
+            U_z = tf.get_variable('U_z', [self.input_size, self.state_size], initializer=initFunc, dtype = tf.float32)
+            b_z = tf.get_variable('b_z', [self.state_size,], initializer=tf.constant_initializer(0), dtype = tf.float32)    ## Recommend on Piazza
+            W_o = tf.get_variable('W_o', [self.state_size, self.state_size], initializer=initFunc, dtype = tf.float32)
+            U_o = tf.get_variable('U_o', [self.input_size, self.state_size], initializer=initFunc, dtype = tf.float32)
+            b_o = tf.get_variable('b_o', [self.state_size,], initializer=tf.constant_initializer(0), dtype = tf.float32)
+
+            z_t = tf.sigmoid(tf.matmul(inputs, U_z) + tf.matmul(state, W_z) + b_z)
+            r_t = tf.sigmoid(tf.matmul(inputs, U_r) + tf.matmul(state, W_r) + b_r)
+            o_t = tf.tanh(tf.matmul(inputs, U_o) + tf.matmul(r_t * state, W_o) + b_o)
+            new_state = z_t * state + (1 - z_t) * o_t
             ### END YOUR CODE ###
         # For a GRU, the output and state are the same (N.B. this isn't true
         # for an LSTM, though we aren't using one of those in our
